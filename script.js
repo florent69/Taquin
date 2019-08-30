@@ -51,10 +51,15 @@ $(document).ready(function () {
         return possibleMoves
     }
 
-//Fonction qui effectue UN mouvement //
-    function oneMove(possibleMoves) {
+    //For Random Move : choisi au hasar une direction //
+    function randomDirection(possibleMoves){
         let random = getRandomInt(possibleMoves.length);
         let moveChoosen = possibleMoves[random];
+        return moveChoosen
+    }
+
+//Fonction qui effectue UN mouvement //
+    function oneMove(moveChoosen) {
         let movingVy = moveChoosen.y;
         let movingVx = moveChoosen.x;
         let initVx = Vx;
@@ -71,7 +76,8 @@ $(document).ready(function () {
     let mixedBoard = function () {
         for (let i = 0; i < mixTurn; i++) {
             let one = movesAllowed();
-            oneMove(one);
+            let two = randomDirection(one);
+            oneMove(two);
         }
         return gameBoard
     };
@@ -98,12 +104,12 @@ $(document).ready(function () {
     /****************************** Parcours en profondeur **********************************************/
 
     //Function qui transforme le double en simple tableau//
-    function getValueInArray(doubleDimBoard){
-        let inSimpleBoard =[];
+    function getValueInArray(doubleDimBoard) {
+        let inSimpleBoard = [];
         for (let i = 0; i < x; i++) {
             for (let j = 0; j < y; j++) {
                 inSimpleBoard.push(doubleDimBoard[i][j]);
-        }
+            }
         }
         return inSimpleBoard
     }
@@ -113,8 +119,8 @@ $(document).ready(function () {
         let simpleGameBoard = getValueInArray(gameBoard);
         console.log(simpleGameBoard);
         let counter = 0;
-        for(let i=0; i<simpleGameBoard.length; i++){
-            if (simpleGameBoard[i] === i || simpleGameBoard[i] === "V"){
+        for (let i = 0; i < simpleGameBoard.length; i++) {
+            if (simpleGameBoard[i] === i || simpleGameBoard[i] === "V") {
                 counter++
             }
         }
@@ -122,30 +128,42 @@ $(document).ready(function () {
     }
 
     //Trop de coups --> true//
-    function tooMuchHit(maxTurn, movesInOneTry){
+    function tooMuchHit(maxTurn, movesInOneTry) {
         return movesInOneTry < maxTurn
     }
 
     //Une profondeur d'essai//
-    let maxTurn = 10;
+    let maxTurn = 200;
     let movesInOneTry = 0;
+
     function oneTry() {
         let muchHits = tooMuchHit(movesInOneTry, maxTurn);
         let check = win(gameBoard);
-        let possibleMoves = movesAllowed();
-        if (muchHits === false && check !==true) {
-            oneMove(possibleMoves);
-            movesInOneTry++;
-            console.log(movesInOneTry);
-            oneTry(maxTurn, movesInOneTry);
-        } else if (muchHits === true){
+
+        if (muchHits === false && check !== true) {
+            let possibleMoves = movesAllowed();
+            console.log(possibleMoves);
+                for (let move in possibleMoves) {
+                    let aMove = [];
+                    aMove.push(possibleMoves[move]);
+                    console.log(aMove);
+                    let fuck = oneMove(aMove[0]);
+                    console.log(fuck);
+                }
+
+
+            // oneMove(possibleMoves);
+            // movesInOneTry++;
+            // console.log(movesInOneTry);
+            // oneTry(maxTurn, movesInOneTry);
+        } else if (muchHits === true) {
             console.log("Not solved ...")
-        }
-        else {
+        } else {
             console.log("Solved !!!!")
         }
     }
-oneTry();
+
+    oneTry();
 
     // let deepTurn = 0;
     // function deepInside(){
