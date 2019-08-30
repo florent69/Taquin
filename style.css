@@ -6,18 +6,21 @@ body {
     border: 3px solid black;
     width: 100px;
     height: 100px;
-    font-weight: bold;
-    background-color: #B50B0B;
 }
-.empty_tile {
+.empty {
+    border: 3px solid black;
+    width: 100px;
+    height: 100px;
+}
+
+td {
     border: 3px solid black;
     width: 100px;
     height: 100px;
     font-weight: bold;
-    background-color: white;
+    margin: 2px;
 }
 
-Réduire
 
 
 
