@@ -2,33 +2,32 @@ $(document).ready(function () {
 
     //Etat de départ/solution du taquin //
     /* Abscisses et Ordonnés */
-    let x = 2;
-    let y = 2;
+    let x = 3;
+    let y = 3;
     /* Nombre de tours de mélange */
-    let mixTurn = 1;
+    let mixTurn = 2;
     //Déplacements possibles pour la case vide //
-    let Vx = 1;
-    let Vy = 1;
+    let Vx = 2;
+    let Vy = 2;
 
     //Une profondeur d'essai//
     let profondeur = 0;
-    let maxTurn = 4;
+    let maxTurn = 8;
 
     /////////////////////////////
-    let board = function (Vx, Vy) {
+    function board (Vx, Vy) {
         let tab = [];
         let value = 0;
-        for (let i = 0; i < x; i++) {
+        for (let i = 0; i < y; i++) {
             tab[i] = [];
-            for (let j = 0; j < y; j++) {
+            for (let j = 0; j < x; j++) {
                 tab[i][j] = value++;
             }
         }
         tab[Vx][Vy] = "V";
         return tab
-    };
+    }
 
-    //Initialisation //
     let gameBoard = new board(Vx, Vy);
 
 //Fonction qui délivre un nombre aléatoire //
@@ -36,20 +35,31 @@ $(document).ready(function () {
         return Math.floor(Math.random() * Math.floor(max));
     }
 
+    //Fonction qui récupère l'index de "V" dans un tableau //
+    function getIndexOfV(gameBoard, V) {
+        for (let i = 0; i < gameBoard.length; i++) {
+            let index = gameBoard[i].indexOf(V);
+            if (index > -1) {
+                return [i, index];
+            }
+        }
+    }
+
 /////////////////////////Mélange à partir de la solution de départ ///////////////////////////////////////
-    function movesAllowed() {
+    function movesAllowed(movesBoard) {
+        let indexV = getIndexOfV(movesBoard, "V");
         let possibleMoves = [];
-        if (Vy < y-1) {
-            possibleMoves.push({"direction": "right", y: Vy + 1, x: Vx});
+        if (indexV[1] < y-1) {
+            possibleMoves.push({"direction": "right", y: indexV[1] + 1, x: indexV[0]});
         }
-        if (Vy > 0) {
-            possibleMoves.push({"direction": "left", y: Vy - 1, x: Vx});
+        if (indexV[1] > 0) {
+            possibleMoves.push({"direction": "left", y: indexV[1] - 1, x: indexV[0]});
         }
-        if (Vx < x-1) {
-            possibleMoves.push({"direction": "down", y: Vy, x: Vx + 1});
+        if (indexV[0] < x-1) {
+            possibleMoves.push({"direction": "down", y: indexV[1], x: indexV[0] + 1});
         }
-        if (Vx > 0) {
-            possibleMoves.push({"direction": "up", y: Vy, x: Vx - 1});
+        if (indexV[0] > 0) {
+            possibleMoves.push({"direction": "up", y: indexV[1], x: indexV[0] - 1});
         }
         return possibleMoves
     }
@@ -57,28 +67,26 @@ $(document).ready(function () {
     //For Random Move : choisi au hasar une direction //
     function randomDirection(possibleMoves) {
         let random = getRandomInt(possibleMoves.length);
-        let moveChoosen = possibleMoves[random];
-        return moveChoosen
+        let moveChosen = possibleMoves[random];
+        return moveChosen
     }
 
 //Fonction qui effectue UN mouvement //
     function oneMove(moveChosen, tab) {
+        let V = getIndexOfV(tab, "V");
         let movingVy = moveChosen.y;
         let movingVx = moveChosen.x;
-        let initVx = Vx;
-        let initVy = Vy;
-        let movingValue = tab[movingVx][movingVy];
-        tab[initVx][initVy] = movingValue;
+        let initVx = V[0];
+        let initVy = V[1];
+        tab[initVx][initVy] = tab[movingVx][movingVy];
         tab[movingVx][movingVy] = "V";
-        Vy = movingVy;
-        Vx = movingVx;
         return tab
     }
 
 //Fonction qui effectue plusieurs tours de mélange //
     function mixedBoard(mixBoard) {
         for (let i = 0; i < mixTurn; i++) {
-            let one = movesAllowed();
+            let one = movesAllowed(mixBoard);
             let two = randomDirection(one);
             oneMove(two, mixBoard);
         }
@@ -115,12 +123,15 @@ $(document).ready(function () {
             return false
         }
         if (win(tGameBoard)) {
-            alert("WIN");
+            table(tGameBoard);
             return true
         }
-        let possibleMoves = movesAllowed();
+        let possibleMoves = movesAllowed(tGameBoard);
         for (let a = 0; a < possibleMoves.length; a++) {
-            let newGameBoard = oneMove(possibleMoves[a], tGameBoard);
+            let newGameBoard = JSON.parse(JSON.stringify(tGameBoard));
+            newGameBoard = oneMove(possibleMoves[a], newGameBoard);//.slice());
+            // console.log(tGameBoard);
+            // console.log(newGameBoard);
             if (oneTry(newGameBoard, profondeur + 1, maxTurn)) {
                 return true
             }
@@ -129,7 +140,7 @@ $(document).ready(function () {
     }
     /*************************** JQUERY *************************************/
     //Génère les cases du tableau à l'intérieur de la table //
-    function table() {
+    function table(gameBoard) {
         $('table').html('');
         for (let i = 0; i < x; i++) {
             $('table').append("<tr" + i + " class='row'></tr>");
@@ -146,13 +157,16 @@ $(document).ready(function () {
     //Mélange le tableau //
     $('#shuffle').on('click', function(){
         mixedBoard(gameBoard);
-        table();
+        table(gameBoard);
     });
 
     // Résolution //
     $('#solve').on('click', function(){
-        oneTry(gameBoard, profondeur, maxTurn);
-        table();
+        if (oneTry(gameBoard, profondeur, maxTurn)) {
+            alert("WIN");
+        } else {
+            alert("PAS RESOLVABLE");
+        }
     });
 
 
